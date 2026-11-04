@@ -176,7 +176,4 @@ $$T = m_2 (g - a)$$
 
 ---
 
-## 📄 Licencia
-
-Este proyecto se distribuye bajo la licencia **MIT**. Desarrollado con fines educativos, de investigación y divulgación de la física mecánica clásica asistida por inteligencia artificial.
 
