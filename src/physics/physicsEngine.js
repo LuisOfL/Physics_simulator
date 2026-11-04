@@ -111,19 +111,6 @@ export const SCENE_TEMPLATES = {
       g: 9.81,
     },
   },
-  ai_custom_code: {
-    id: 'ai_custom_code',
-    name: 'Simulación Programada Dinámicamente por el LLM (AWS Bedrock)',
-    shortName: '✨ Código IA Dinámico',
-    category: 'Generación de Código con LLM',
-    description:
-      'Pídele al LLM en el chat cualquier problema físico especial (ej. colisión de dos esferas, doble polea, rizo de montaña rusa) y el LLM programará el código Canvas 2D en vivo.',
-    params: {
-      m1: 4.0,
-      m2: 2.5,
-      g: 9.81,
-    },
-  },
 };
 
 /**

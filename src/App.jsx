@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import {
-  Atom,
   Gamepad2,
   Globe2,
 } from 'lucide-react';
@@ -23,7 +22,6 @@ export default function App() {
     return initial;
   });
 
-  // Objetos iniciales del Modo Juego / Constructor Libre
   const [sandboxObjects, setSandboxObjects] = useState([
     {
       id: 'b1',
@@ -53,55 +51,7 @@ export default function App() {
     { id: 'r1', fromId: 'b1', toId: 'b2' },
   ]);
 
-  const [customCanvasCode, setCustomCanvasCode] = useState(`// Simulación generada por IA: Colisión Elástica 1D con Vectores DCL
-const floorY = 310;
-ctx.strokeStyle = '#64748b';
-ctx.lineWidth = 3;
-ctx.beginPath();
-ctx.moveTo(60, floorY);
-ctx.lineTo(W - 60, floorY);
-ctx.stroke();
-
-const m1 = params.m1 || 4;
-const m2 = params.m2 || 2.5;
-const g = params.g || 9.81;
-const cycle = (t % 4) - 2; // oscila entre -2 y 2
-const gap = Math.abs(cycle) * 140;
-
-const x1 = W / 2 - 36 - (cycle < 0 ? gap : gap * (m2 / m1) * 0.7);
-const x2 = W / 2 + 36 + (cycle > 0 ? gap : gap * (m1 / m2) * 0.4);
-const y = floorY - 30;
-
-// Esfera 1
-ctx.fillStyle = '#0284c7';
-ctx.beginPath();
-ctx.arc(x1, y, 28, 0, Math.PI * 2);
-ctx.fill();
-ctx.fillStyle = '#fff';
-ctx.font = 'bold 12px monospace';
-ctx.fillText('m1=' + m1 + 'kg', x1 - 24, y + 4);
-
-// Esfera 2
-ctx.fillStyle = '#e11d48';
-ctx.beginPath();
-ctx.arc(x2, y, 24, 0, Math.PI * 2);
-ctx.fill();
-ctx.fillStyle = '#fff';
-ctx.fillText('m2=' + m2 + 'kg', x2 - 22, y + 4);
-
-// Vectores DCL (Peso y Normal) + Impulso en el choque
-drawVector(x1, y, -90, m1 * g * 0.7, '#f43f5e', 'W1');
-drawVector(x1, y, 90, m1 * g * 0.7, '#38bdf8', 'N1');
-drawVector(x2, y, -90, m2 * g * 0.7, '#f43f5e', 'W2');
-drawVector(x2, y, 90, m2 * g * 0.7, '#38bdf8', 'N2');
-if (Math.abs(cycle) < 0.18) {
-  drawVector(x1, y, 180, 45, '#fbbf24', 'F_21');
-  drawVector(x2, y, 0, 45, '#fbbf24', 'F_12');
-}`);
-
-  // Configuración automática de AWS Bedrock (se lee desde variables de entorno en el servidor)
   const awsConfig = { mode: 'auto' };
-
   const currentParams = paramsByScene[sceneType] || SCENE_TEMPLATES.incline_pulley.params;
 
   const [liveSolver, setLiveSolver] = useState(() =>
@@ -122,23 +72,23 @@ if (Math.abs(cycle) < 0.18) {
     setLiveSolver(solverData);
   }, []);
 
-  // Mensajes iniciales del Chatbot
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       role: 'assistant',
-      provider: 'PhysiLab AI + AWS Bedrock Ready',
-      content: `¡Bienvenido a **PhysiLab AI**! Soy tu laboratorio interactivo y solucionador visual de Física Mecánica.
+      provider: 'PhysiLab Neural Engine // AWS Bedrock',
+      content: `### 🛰️ CONSOLA DE CONTROL Y ANÁLISIS DE MECÁNICA CLÁSICA
 
-Puedes usar la plataforma de **3 formas combinadas**:
-- **1. Sube o pega una imagen de un problema**: Extraigo los datos del diagrama, construyo la escena en el simulador en tiempo real y te muestro los **Diagramas de Cuerpo Libre (DCL)** junto con la solución paso a paso.
-- **2. Explora y modifica cualquier fenómeno en vivo**: Usa los deslizadores para cambiar masas ($m_1, m_2$), ángulos ($\theta$), fricción ($\mu_k$) o gravedad y observa cómo se ajustan los vectores de fuerza ($\vec{W}, \vec{N}, \vec{T}, \vec{f}_r$).
-- **3. Modo Juego / Constructor Libre (🎮)**: Arrastra bloques, rampas, poleas y únelos con cuerdas a tu gusto; luego presiona **"Resolver Escena con IA"** para que resuelva el problema exacto que armaste.`,
+El sistema se encuentra en línea y calibrado en **${(currentParams.g || 9.81).toFixed(2)} m/s²**.
+
+**MODOS OPERATIVOS DISPONIBLES:**
+- **[01] INFERENCIA POR IMAGEN:** Arrastra o pega (\`Ctrl+V\`) una captura de un examen o diagrama físico. El LLM decodifica variables cinemáticas y dinámicas para sintetizar la escena en vivo.
+- **[02] VECTORIZACIÓN DCL:** Los Diagramas de Cuerpo Libre proyectan en tiempo real los tensores de fuerza ($\vec{W}, \vec{N}, \vec{T}, \vec{f}_r, \vec{F}_{ext}$).
+- **[03] EXPERIMENTACIÓN MODULAR (🎮):** Ensambla masas y poleas personalizadas en el simulador.`,
     },
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
-  // Enviar mensaje o imagen al backend de AWS Bedrock (con fallback local automático)
   const handleSendMessage = async ({ text, imageBase64 = null, imageMimeType = 'image/png' }) => {
     const userMsg = {
       id: `user_${Date.now()}`,
@@ -175,23 +125,17 @@ Puedes usar la plataforma de **3 formas combinadas**:
 
       const data = await response.json();
 
-      // Si el LLM o el analizador devolvió una actualización de escena para el simulador, aplicarla de inmediato
-      if (data.simulatorUpdate) {
-        if (data.simulatorUpdate.customCanvasCode) {
-          setCustomCanvasCode(data.simulatorUpdate.customCanvasCode);
-          setSceneType('ai_custom_code');
-        } else if (data.simulatorUpdate.sceneType && SCENE_TEMPLATES[data.simulatorUpdate.sceneType]) {
-          const nextType = data.simulatorUpdate.sceneType;
-          setSceneType(nextType);
-          if (data.simulatorUpdate.params) {
-            setParamsByScene((prev) => ({
-              ...prev,
-              [nextType]: {
-                ...prev[nextType],
-                ...data.simulatorUpdate.params,
-              },
-            }));
-          }
+      if (data.simulatorUpdate && data.simulatorUpdate.sceneType && SCENE_TEMPLATES[data.simulatorUpdate.sceneType]) {
+        const nextType = data.simulatorUpdate.sceneType;
+        setSceneType(nextType);
+        if (data.simulatorUpdate.params) {
+          setParamsByScene((prev) => ({
+            ...prev,
+            [nextType]: {
+              ...prev[nextType],
+              ...data.simulatorUpdate.params,
+            },
+          }));
         }
       }
 
@@ -200,13 +144,12 @@ Puedes usar la plataforma de **3 formas combinadas**:
         {
           id: `bot_${Date.now()}`,
           role: 'assistant',
-          content: data.reply || 'Problema analizado y sincronizado con el simulador.',
-          provider: data.provider || 'AWS Bedrock / PhysiLab Engine',
+          content: data.reply || 'Problema procesado e inyectado al simulador.',
+          provider: data.provider || 'AWS Bedrock Runtime',
         },
       ]);
     } catch {
-      // Si el servidor Express no está corriendo, resolver directamente en el cliente
-      const fallbackText = `### 📊 Solución Analítica Instantánea (${SCENE_TEMPLATES[sceneType]?.name})\n- **Estado:** ${freshSolver.motionState}\n- **Aceleración:** \`${Number(freshSolver.summary.acceleration || 0).toFixed(3)} m/s²\`\n${freshSolver.summary.tension ? `- **Tensión (T):** \`${Number(freshSolver.summary.tension).toFixed(2)} N\`\n` : ''}\n---\n` +
+      const fallbackText = `### 📊 DEDUCCIÓN ANALÍTICA LOCAL (${SCENE_TEMPLATES[sceneType]?.name})\n- **Estado Dinámico:** ${freshSolver.motionState}\n- **Aceleración Neta:** \`${Number(freshSolver.summary.acceleration || 0).toFixed(3)} m/s²\`\n${freshSolver.summary.tension ? `- **Tensión en Tensor (T):** \`${Number(freshSolver.summary.tension).toFixed(2)} N\`\n` : ''}\n---\n` +
         freshSolver.steps.map((s) => `### ${s.title}\n${s.detail}\n\`\`\`\n${s.formula}\n\`\`\``).join('\n\n');
 
       setMessages((prev) => [
@@ -215,7 +158,7 @@ Puedes usar la plataforma de **3 formas combinadas**:
           id: `bot_${Date.now()}`,
           role: 'assistant',
           content: fallbackText,
-          provider: 'Motor Físico Local (Cliente)',
+          provider: 'Local Solver Core // Offline',
         },
       ]);
     } finally {
@@ -223,22 +166,21 @@ Puedes usar la plataforma de **3 formas combinadas**:
     }
   };
 
-  // Botón directo: "Resolver lo que hay actualmente en el simulador / Modo Juego"
   const handleSolveCurrentSceneWithAI = () => {
     const templateName = SCENE_TEMPLATES[sceneType]?.name || sceneType;
     const promptDesc =
       sceneType === 'sandbox_game'
-        ? `Resuelve paso a paso el sistema que armé en el Modo Juego/Constructor: tengo ${sandboxObjects.length} cuerpos (${sandboxObjects
+        ? `Resuelve analíticamente el sistema personalizado: ${sandboxObjects.length} cuerpos (${sandboxObjects
             .map(
               (o) =>
                 `${o.label}=${o.mass}kg en ${
-                  o.type === 'hanging_mass' ? 'suspensión vertical' : `rampa de ${o.angleDeg}° con μ=${o.mu}`
+                  o.type === 'hanging_mass' ? 'suspensión vertical' : `rampa θ=${o.angleDeg}° con μ=${o.mu}`
                 }`
             )
-            .join(', ')}) y ${sandboxRopes.length} cuerda(s) conectadas. Explica los Diagramas de Cuerpo Libre y calcula la aceleración y tensión.`
-        : `Explica detalladamente y resuelve el problema actual del simulador (${templateName}) con parámetros ${JSON.stringify(
+            .join(', ')}) y ${sandboxRopes.length} acoplamientos con cuerda. Desglosa los Diagramas de Cuerpo Libre (DCL), la sumatoria de fuerzas en coordenadas rotadas y calcula la aceleración y tensión numéricas.`
+        : `Resuelve paso a paso el problema actual (${templateName}) con parámetros ${JSON.stringify(
             currentParams
-          )}, mostrando cada fuerza del Diagrama de Cuerpo Libre (DCL) y las ecuaciones de Newton.`;
+          )}, detallando cada vector de fuerza en el Diagrama de Cuerpo Libre (DCL) y aplicando las leyes de Newton.`;
 
     handleSendMessage({ text: promptDesc });
   };
@@ -256,104 +198,96 @@ Puedes usar la plataforma de **3 formas combinadas**:
     }
   };
 
+  const sceneKeys = Object.keys(SCENE_TEMPLATES);
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Barra de Navegación Principal */}
-      <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/90 px-4 lg:px-6 py-3">
-        <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
-          {/* Logo y Título */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-              <Atom className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-sky-400 bg-clip-text text-transparent">
-                  PhysiLab AI
-                </h1>
-                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                  AWS Bedrock + Simulador DCL
+    <div className="min-h-screen bg-[#08090d] text-zinc-100 flex flex-col font-sans selection:bg-amber-400/20 selection:text-amber-200">
+      {/* Barra de Navegación de Escenarios Limpia */}
+      <nav className="sticky top-0 z-40 bg-[#0d0f14]/95 backdrop-blur-md border-b border-[#202430] px-3 sm:px-5 py-2">
+        <div className="max-w-[1680px] mx-auto flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+          {sceneKeys.map((key, idx) => {
+            const tpl = SCENE_TEMPLATES[key];
+            const active = sceneType === tpl.id;
+            const isGame = tpl.id === 'sandbox_game';
+            const codeNum = `0${idx + 1}`.slice(-2);
+
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => setSceneType(tpl.id)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded text-[11.5px] font-tech font-semibold whitespace-nowrap transition cursor-pointer border ${
+                  active
+                    ? isGame
+                      ? 'bg-[#1b172a] text-purple-300 border-purple-500/70 shadow-sm shadow-purple-500/20'
+                      : 'bg-[#171b26] text-amber-300 border-amber-400/60 shadow-xs'
+                    : isGame
+                    ? 'bg-[#12111d] text-purple-400/70 border-[#28213a] hover:text-purple-300 hover:border-purple-500/40'
+                    : 'bg-[#0f1118] text-zinc-400 border-[#1f2330] hover:text-zinc-200 hover:border-[#2e3447]'
+                }`}
+              >
+                <span className={`text-[10px] font-mono opacity-60 ${active ? 'text-amber-400' : ''}`}>
+                  [{codeNum}]
                 </span>
+                {isGame && <Gamepad2 className="w-3.5 h-3.5 text-purple-400" />}
+                <span>{tpl.shortName.toUpperCase()}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Área de Trabajo Principal */}
+      <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Lado Izquierdo (7 Columnas): Panel del Simulador + Inspector de Fuerzas DCL */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Cabecera Técnica del Módulo Activo + Selector de Gravedad Separado */}
+          <div className="relative bg-[#0d0f15] border border-[#202534] rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 overflow-hidden">
+            <div className="absolute top-1.5 left-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
+            <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
+            <div className="absolute bottom-1.5 left-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
+            <div className="absolute bottom-1.5 right-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
+
+            <div className="flex-1 min-w-[280px]">
+              <div className="flex items-center gap-2">
+                <span className="font-tech text-[10px] uppercase px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
+                  {SCENE_TEMPLATES[sceneType]?.category}
+                </span>
+                <h2 className="font-heading text-sm font-bold text-zinc-100 uppercase tracking-wide">
+                  {SCENE_TEMPLATES[sceneType]?.name}
+                </h2>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Resolución de problemas por Imagen, Diagramas de Cuerpo Libre en Vivo y Constructor de Física
+              <p className="text-[11.5px] text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                {SCENE_TEMPLATES[sceneType]?.description}
               </p>
             </div>
-          </div>
 
-          {/* Selector de Gravedad Planetaria */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="hidden md:flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
-              <Globe2 className="w-3.5 h-3.5 text-slate-400 ml-2 mr-1" />
+            {/* Selector de Campo Gravitatorio Ubicado Abajo y Separado */}
+            <div className="flex items-center gap-1 bg-[#12151e] border border-[#232838] p-1 rounded-lg shrink-0">
+              <div className="flex items-center gap-1.5 px-2 text-[10px] font-tech text-zinc-400 uppercase tracking-wider">
+                <Globe2 className="w-3.5 h-3.5 text-amber-400/90" />
+                <span>CAMPO g:</span>
+              </div>
               {GRAVITY_PRESETS.map((gp) => {
                 const isSelected = Math.abs((currentParams.g ?? 9.81) - gp.g) < 0.05;
                 return (
                   <button
                     key={gp.id}
                     onClick={() => handleParamsChange({ g: gp.g })}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+                    className={`font-tech text-[10.5px] px-2 py-1 rounded transition cursor-pointer ${
                       isSelected
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-amber-400/20 text-amber-300 font-bold border border-amber-400/50 shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#181d2a]'
                     }`}
+                    title={`${gp.name}: ${gp.g} m/s²`}
                   >
-                    {gp.name} ({gp.g})
+                    {gp.name.toUpperCase()} <span className="opacity-70 text-[9px]">[{gp.g}]</span>
                   </button>
                 );
               })}
             </div>
           </div>
-        </div>
 
-        {/* Pestañas de Escenarios del Simulador + Modo Juego */}
-        <div className="max-w-[1600px] mx-auto mt-3 flex items-center gap-1.5 overflow-x-auto pb-1">
-          {Object.values(SCENE_TEMPLATES).map((tpl) => {
-            const active = sceneType === tpl.id;
-            const isGame = tpl.id === 'sandbox_game';
-            return (
-              <button
-                key={tpl.id}
-                onClick={() => setSceneType(tpl.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-                  active
-                    ? isGame
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-400 shadow-lg shadow-indigo-500/25'
-                      : 'bg-cyan-500/20 text-cyan-200 border-cyan-500/50 shadow-sm'
-                    : isGame
-                    ? 'bg-indigo-950/50 text-indigo-300 border-indigo-500/30 hover:bg-indigo-900/50'
-                    : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
-                }`}
-              >
-                {isGame && <Gamepad2 className="w-3.5 h-3.5" />}
-                <span>{tpl.shortName}</span>
-              </button>
-            );
-          })}
-        </div>
-      </header>
-
-      {/* Contenido Principal en Grid de 12 Columnas */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Columna Izquierda (7 cols): Simulador Visual + Inspector de Diagramas de Cuerpo Libre */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Banner descriptivo de la escena activa */}
-          <div className="bg-slate-900/80 border border-slate-800/90 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                  {SCENE_TEMPLATES[sceneType]?.category}
-                </span>
-                <h2 className="text-sm font-bold text-white">
-                  {SCENE_TEMPLATES[sceneType]?.name}
-                </h2>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {SCENE_TEMPLATES[sceneType]?.description}
-              </p>
-            </div>
-          </div>
-
-          {/* Simulador Interactivo con Vectores DCL superpuestos */}
+          {/* Simulador Físico Oscuro con Estética de Consola de Laboratorio */}
           <PhysicsCanvasSimulator
             sceneType={sceneType}
             params={currentParams}
@@ -362,18 +296,16 @@ Puedes usar la plataforma de **3 formas combinadas**:
             setSandboxObjects={setSandboxObjects}
             sandboxRopes={sandboxRopes}
             setSandboxRopes={setSandboxRopes}
-            customCanvasCode={customCanvasCode}
-            setCustomCanvasCode={setCustomCanvasCode}
             onSolveCurrentSceneWithAI={handleSolveCurrentSceneWithAI}
             onLiveSolverUpdate={handleLiveSolverUpdate}
           />
 
-          {/* Inspector de Diagramas de Cuerpo Libre Aislados y Ecuaciones Paso a Paso */}
+          {/* Inspector Aislado de Vectores y Ecuaciones Newtonianas */}
           <FreeBodyDiagramInspector solver={liveSolver} />
         </div>
 
-        {/* Columna Derecha (5 cols): Chatbot IA & Analizador de Problemas de Física */}
-        <div className="lg:col-span-5 flex flex-col min-h-[620px]">
+        {/* Lado Derecho (5 Columnas): Consola de Inferencia IA & Visión */}
+        <div className="lg:col-span-5 flex flex-col min-h-[640px]">
           <div className="flex-1 flex flex-col h-full">
             <BedrockPhysicsChat
               messages={messages}
@@ -384,6 +316,18 @@ Puedes usar la plataforma de **3 formas combinadas**:
           </div>
         </div>
       </main>
+
+      {/* Pie de Página Minimalista de Consola de Laboratorio */}
+      <footer className="border-t border-[#1b1f2b] bg-[#090b10] px-4 py-2 text-[11px] font-tech text-zinc-500 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-4">
+          <span>PHYSILAB BENCH // CLASSICAL DYNAMICS SIMULATOR</span>
+          <span className="hidden sm:inline text-zinc-600">|</span>
+          <span className="hidden sm:inline">COORDINATES: DCL-LOCAL (X&apos;-Y&apos;)</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-400">AWS BEDROCK RUNTIME: <strong className="text-emerald-400 font-normal">ENABLED</strong></span>
+        </div>
+      </footer>
     </div>
   );
 }

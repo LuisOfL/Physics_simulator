@@ -21,8 +21,6 @@ export default function PhysicsCanvasSimulator({
   setSandboxObjects,
   sandboxRopes,
   setSandboxRopes,
-  customCanvasCode,
-  setCustomCanvasCode,
   onSolveCurrentSceneWithAI,
   onLiveSolverUpdate,
 }) {
@@ -32,7 +30,6 @@ export default function PhysicsCanvasSimulator({
   const [showVectors, setShowVectors] = useState(true);
   const [showComponents, setShowComponents] = useState(true);
   const [showValues, setShowValues] = useState(true);
-  const [showCodeEditor, setShowCodeEditor] = useState(false);
 
   // Estado para el Modo Juego / Constructor Libre
   const [selectedObjId, setSelectedObjId] = useState('b1');
@@ -256,7 +253,6 @@ export default function PhysicsCanvasSimulator({
           sandboxRopes,
           selectedObjId,
           connectingFromId,
-          customCanvasCode,
           isPlaying,
         });
       }
@@ -278,7 +274,6 @@ export default function PhysicsCanvasSimulator({
     sandboxRopes,
     selectedObjId,
     connectingFromId,
-    customCanvasCode,
   ]);
 
   const handleMouseDown = (e) => {
@@ -404,102 +399,103 @@ export default function PhysicsCanvasSimulator({
   };
 
   return (
-    <div className="flex flex-col bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
-      {/* Barra superior del Simulador */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-slate-950/90 border-b border-slate-800">
+    <div className="flex flex-col bg-[#0b0d13] border border-[#212738] rounded-xl overflow-hidden shadow-2xl">
+      {/* Barra superior de Control de Instrumentación */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2 bg-[#0e111a] border-b border-[#1f2537]">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-tech text-[11px] font-bold uppercase tracking-wider transition cursor-pointer border ${
               isPlaying
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/50 hover:bg-amber-500/25'
+                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/25'
             }`}
           >
-            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            {isPlaying ? 'Pausar' : 'Simular'}
+            {isPlaying ? <Pause className="w-3 h-3 text-amber-400" /> : <Play className="w-3 h-3 text-emerald-400" />}
+            {isPlaying ? 'PAUSAR MOTOR' : 'INICIAR SIM'}
           </button>
 
           <button
             onClick={resetSimulation}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded font-tech text-[11px] font-semibold text-zinc-300 bg-[#161a26] hover:bg-[#1f2537] border border-[#2a3247] transition cursor-pointer"
             title="Reiniciar posiciones iniciales"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reiniciar
+            <RotateCcw className="w-3 h-3 text-zinc-400" />
+            REINICIAR [T₀]
           </button>
 
-          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-[11px]">
+          {/* Selector de escala temporal conmutada */}
+          <div className="flex items-center bg-[#07090e] border border-[#1d2232] rounded p-0.5 font-tech text-[10px]">
             {[0.25, 0.5, 1].map((spd) => (
               <button
                 key={spd}
                 onClick={() => setTimeScale(spd)}
-                className={`px-2 py-1 rounded-md font-mono transition cursor-pointer ${
+                className={`px-2 py-0.5 rounded transition cursor-pointer ${
                   timeScale === spd
-                    ? 'bg-cyan-500/20 text-cyan-300 font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-amber-400/20 text-amber-300 font-bold border border-amber-400/40'
+                    : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
-                {spd}x
+                {spd}X
               </button>
             ))}
           </div>
         </div>
 
-        {/* Toggles de visualización de Diagramas de Cuerpo Libre */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* Interruptores de Telemetría DCL */}
+        <div className="flex flex-wrap items-center gap-1.5 font-tech text-[10.5px]">
           <button
             onClick={() => setShowVectors(!showVectors)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition cursor-pointer ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded border transition cursor-pointer ${
               showVectors
-                ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40'
-                : 'bg-slate-900 text-slate-400 border-slate-800'
+                ? 'bg-[#182033] text-sky-300 border-sky-500/60 font-semibold'
+                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5" />
-            Vectores DCL
+            <Eye className="w-3 h-3" />
+            TENSORES DCL
           </button>
           <button
             onClick={() => setShowComponents(!showComponents)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded border transition cursor-pointer ${
               showComponents
-                ? 'bg-rose-500/15 text-rose-300 border-rose-500/40'
-                : 'bg-slate-900 text-slate-400 border-slate-800'
+                ? 'bg-[#29171f] text-rose-300 border-rose-500/60 font-semibold'
+                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
             }`}
           >
-            Proyección Trigonométrica (mg·senθ / cosθ)
+            PROY. TRIGON. (mg·senθ)
           </button>
           <button
             onClick={() => setShowValues(!showValues)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded border transition cursor-pointer ${
               showValues
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
-                : 'bg-slate-900 text-slate-400 border-slate-800'
+                ? 'bg-[#282115] text-amber-300 border-amber-500/60 font-semibold'
+                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
             }`}
           >
-            Magnitudes (N)
+            CALIB. (N)
           </button>
         </div>
       </div>
 
       {/* Barra especial cuando está activo el Modo Juego / Constructor Libre */}
       {sceneType === 'sandbox_game' && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-indigo-950/40 border-b border-indigo-500/30">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 bg-[#120f1f] border-b border-purple-500/30 font-tech">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold text-indigo-300 flex items-center gap-1 mr-1">
-              <Hand className="w-3.5 h-3.5" /> Constructor:
+            <span className="text-[11px] font-bold text-purple-300 flex items-center gap-1 mr-1 uppercase">
+              <Hand className="w-3.5 h-3.5" /> Ensamblador:
             </span>
             <button
               onClick={() => addSandboxBlock('block')}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-500/40 transition cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] bg-sky-500/15 hover:bg-sky-500/25 text-sky-200 border border-sky-500/40 transition cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Bloque en Rampa/Mesa
+              <Plus className="w-3 h-3" /> + BLOQUE RAMPA
             </button>
             <button
               onClick={() => addSandboxBlock('hanging_mass')}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 transition cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-500/40 transition cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Masa Colgante + Polea
+              <Plus className="w-3 h-3" /> + MASA COLGANTE
             </button>
             <button
               onClick={() => {
@@ -509,60 +505,34 @@ export default function PhysicsCanvasSimulator({
                   setConnectingFromId(selectedSandboxObj.id);
                 }
               }}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] border transition cursor-pointer ${
                 connectingFromId
-                  ? 'bg-amber-500 text-slate-950 font-bold border-amber-300 animate-pulse'
-                  : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border-amber-500/40'
+                  ? 'bg-amber-400 text-black font-bold border-amber-300 animate-pulse'
+                  : 'bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 border-amber-400/40'
               }`}
             >
-              <Link2 className="w-3.5 h-3.5" />
+              <Link2 className="w-3 h-3" />
               {connectingFromId
-                ? 'Haz clic en otro bloque para unir cuerda...'
-                : 'Unir con Cuerda'}
+                ? 'CLICK EN 2° CUERPO PARA UNIR CUERDA...'
+                : 'ACOPLAR CON CUERDA'}
             </button>
             {sandboxRopes.length > 0 && (
               <button
                 onClick={() => setSandboxRopes([])}
-                className="px-2 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                className="px-2 py-1 rounded text-[10.5px] bg-[#1a1e2b] hover:bg-[#252c3f] text-zinc-400 border border-[#2b3348] cursor-pointer"
               >
-                Cortar Cuerdas
+                CORTAR TENSORES
               </button>
             )}
           </div>
 
           <button
             onClick={onSolveCurrentSceneWithAI}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-bold bg-purple-500/25 hover:bg-purple-500/40 text-purple-200 border border-purple-500/60 shadow-sm transition cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            Resolver Escena con IA
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            RESOLVER ENSAMBLE CON IA
           </button>
-        </div>
-      )}
-
-      {/* Barra para el Modo Código IA Dinámico */}
-      {sceneType === 'ai_custom_code' && (
-        <div className="px-4 py-2 bg-purple-950/40 border-b border-purple-500/30 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-purple-200 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              Simulador Programado en JavaScript Canvas por el LLM
-            </span>
-            <button
-              onClick={() => setShowCodeEditor(!showCodeEditor)}
-              className="px-2.5 py-1 rounded-lg text-xs font-mono bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 cursor-pointer"
-            >
-              {showCodeEditor ? 'Ocultar Código Generado' : 'Ver / Editar Código JS del Simulador'}
-            </button>
-          </div>
-          {showCodeEditor && (
-            <textarea
-              rows={6}
-              value={customCanvasCode}
-              onChange={(e) => setCustomCanvasCode && setCustomCanvasCode(e.target.value)}
-              className="w-full font-mono text-[11px] bg-slate-950 text-emerald-300 border border-purple-500/40 rounded-xl p-2.5 focus:outline-none"
-            />
-          )}
         </div>
       )}
 
@@ -818,11 +788,14 @@ export default function PhysicsCanvasSimulator({
 
 function SliderControl({ label, value, min, max, step, unit, onChange }) {
   return (
-    <div className="bg-slate-950/75 border border-slate-800/90 rounded-xl px-3 py-2">
-      <div className="flex items-center justify-between text-xs mb-1">
-        <span className="text-slate-400 font-medium truncate">{label}</span>
-        <span className="font-mono font-bold text-cyan-300">
-          {Number(value).toFixed(step < 0.1 ? 2 : step < 1 ? 1 : 0)} {unit}
+    <div className="bg-[#0b0e14] border border-[#1e2434] hover:border-[#2f3850] rounded-lg px-2.5 py-2 transition group">
+      <div className="flex items-center justify-between text-[11px] mb-1 font-tech">
+        <span className="text-zinc-400 group-hover:text-zinc-200 transition font-medium truncate uppercase tracking-wider text-[10px]">
+          {label}
+        </span>
+        <span className="font-bold text-amber-300">
+          {Number(value).toFixed(step < 0.1 ? 2 : step < 1 ? 1 : 0)}
+          <span className="text-zinc-500 font-normal ml-0.5 text-[9.5px]">{unit}</span>
         </span>
       </div>
       <input
@@ -832,7 +805,7 @@ function SliderControl({ label, value, min, max, step, unit, onChange }) {
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+        className="w-full accent-amber-400 h-1 bg-[#171b26] rounded cursor-pointer"
       />
     </div>
   );
@@ -2089,21 +2062,5 @@ function drawRealisticScene(ctx, W, H, sceneType, params, sim, solver, opts) {
       renderBodyVectors(curX, curY, obj.id);
     });
     return;
-  }
-
-  /* ==========================================================================
-   * 8. MODO SIMULACIÓN PROGRAMADA POR IA (ai_custom_code)
-   * ========================================================================== */
-  if (sceneType === 'ai_custom_code' && opts.customCanvasCode) {
-    try {
-      const fn = new Function('ctx', 'W', 'H', 't', 'params', 'drawVector', opts.customCanvasCode);
-      fn(ctx, W, H, sim.t, params, (x, y, ang, mag, col, lbl) =>
-        drawForceVector(ctx, x, y, ang, mag, col, lbl, opts.showValues)
-      );
-    } catch (err) {
-      ctx.fillStyle = '#f43f5e';
-      ctx.font = '13px JetBrains Mono, monospace';
-      ctx.fillText(`Error en código JS personalizado: ${err.message}`, 40, 120);
-    }
   }
 }

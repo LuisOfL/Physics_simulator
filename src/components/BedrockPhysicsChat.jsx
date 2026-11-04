@@ -4,12 +4,13 @@ import {
   Send,
   Image as ImageIcon,
   Sparkles,
-  Bot,
+  Terminal,
+  Cpu,
   User,
   X,
   Wand2,
   Loader2,
-  Cpu,
+  Scan,
 } from 'lucide-react';
 import { SAMPLE_PROBLEMS } from '../physics/physicsEngine';
 import { generateProblemDiagramDataUrl } from '../physics/problemImageGenerator';
@@ -70,7 +71,6 @@ export default function BedrockPhysicsChat({
     setImagePreview(null);
   };
 
-  // Generar una imagen PNG de un problema de examen real para probar el flujo visual de inmediato
   const handleLoadSampleImage = (sample) => {
     const dataUrl = generateProblemDiagramDataUrl(sample);
     setImagePreview(dataUrl);
@@ -84,26 +84,31 @@ export default function BedrockPhysicsChat({
   return (
     <div
       onPaste={handlePaste}
-      className="flex flex-col h-full bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl"
+      className="flex flex-col h-full bg-[#0b0d13] border border-[#212738] rounded-xl overflow-hidden shadow-2xl"
     >
-      {/* Cabecera del Chatbot y Subida de Imagen */}
-      <div className="px-4 py-3 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between gap-2">
+      {/* Cabecera Técnica de la Terminal de Inferencia */}
+      <div className="px-4 py-2.5 bg-[#0e111a] border-b border-[#1f2537] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
-            <Bot className="w-4 h-4" />
+          <div className="w-7 h-7 rounded bg-[#161a26] border border-[#273046] flex items-center justify-center text-amber-400">
+            <Terminal className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-              Tutor IA de Física & Visión (AWS Bedrock)
-            </h2>
-            <p className="text-[11px] text-slate-400">
-              Sube o pega (Ctrl+V) la foto de un problema o resuelve lo que armaste en el simulador
+            <div className="flex items-center gap-2">
+              <span className="font-heading text-xs font-bold text-zinc-100 uppercase tracking-wide">
+                NEURAL COGNITION // AWS BEDROCK
+              </span>
+              <span className="font-tech text-[9px] uppercase px-1.5 py-0.2 rounded bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">
+                ACTIVE
+              </span>
+            </div>
+            <p className="font-tech text-[10px] text-zinc-500">
+              RECEPTOR MULTIMODAL & RESOLUTOR DCL DE MECÁNICA
             </p>
           </div>
         </div>
       </div>
 
-      {/* Zona rápida de Subida de Imagen + Problemas de Ejemplo */}
+      {/* Bahía de Ingestión de Capturas / Imágenes Ópticas */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -111,21 +116,21 @@ export default function BedrockPhysicsChat({
         }}
         onDragLeave={() => setIsDraggingOver(false)}
         onDrop={handleDrop}
-        className={`mx-3 mt-3 p-3 rounded-xl border-2 border-dashed transition ${
+        className={`mx-3 mt-3 p-2.5 rounded-lg border border-dashed transition ${
           isDraggingOver
-            ? 'border-cyan-400 bg-cyan-500/10'
-            : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+            ? 'border-amber-400 bg-amber-400/10'
+            : 'border-[#262c3e] bg-[#080a0f] hover:border-[#3b4460]'
         }`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 font-tech">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold bg-[#171b26] hover:bg-[#1f2537] text-zinc-200 border border-[#2b3348] transition cursor-pointer"
             >
-              <Upload className="w-3.5 h-3.5" />
-              Subir Imagen de Problema
+              <Upload className="w-3 h-3 text-amber-400" />
+              INGESTAR IMAGEN
             </button>
             <input
               ref={fileInputRef}
@@ -134,8 +139,8 @@ export default function BedrockPhysicsChat({
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
-            <span className="text-[11px] text-slate-400 hidden sm:inline">
-              o arrastra/pega captura aquí
+            <span className="text-[10px] text-zinc-500 hidden sm:inline">
+              // ARRASTRAR O PEGAR [CTRL+V]
             </span>
           </div>
 
@@ -146,72 +151,72 @@ export default function BedrockPhysicsChat({
                 SAMPLE_PROBLEMS[Math.floor(Math.random() * SAMPLE_PROBLEMS.length)];
               handleLoadSampleImage(randomProb);
             }}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/30 transition cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded text-[10.5px] font-medium bg-[#141926] hover:bg-[#1a2133] text-sky-300 border border-[#242f4c] transition cursor-pointer"
           >
-            <Wand2 className="w-3 h-3" />
-            Cargar Imagen de Examen Demo
+            <Scan className="w-3 h-3 text-sky-400" />
+            CARGAR MUESTRA DEMO
           </button>
         </div>
 
-        {/* Vista previa si hay una imagen cargada lista para enviar */}
+        {/* Vista previa de imagen acoplada */}
         {imagePreview && (
-          <div className="mt-2.5 relative rounded-lg overflow-hidden border border-cyan-500/40 bg-slate-900 p-1.5 flex items-center gap-3">
+          <div className="mt-2 relative rounded border border-amber-400/40 bg-[#0e111a] p-1.5 flex items-center gap-3">
             <img
               src={imagePreview}
-              alt="Problema subido"
-              className="h-20 w-32 object-cover rounded border border-slate-700"
+              alt="Problema acoplado"
+              className="h-16 w-28 object-cover rounded border border-[#242b3d]"
             />
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-cyan-300 flex items-center gap-1">
-                <ImageIcon className="w-3.5 h-3.5" /> Imagen lista para analizar y simular
+            <div className="flex-1 min-w-0 font-tech">
+              <div className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+                <ImageIcon className="w-3 h-3" /> CAPTURA LISTA PARA DECODIFICACIÓN
               </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                Presiona &quot;Resolver y Simular&quot; para construir la escena y ver los DCL.
+              <p className="text-[10px] text-zinc-400 truncate mt-0.5">
+                Presiona &quot;EJECUTAR RESOLUCIÓN&quot; para calibrar la escena física.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setImagePreview(null)}
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/30 text-slate-300 hover:text-rose-200 cursor-pointer"
+              className="p-1 rounded bg-[#171b27] hover:bg-rose-900/40 text-zinc-400 hover:text-rose-300 transition cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
 
-      {/* Historial de Mensajes del Chatbot */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[380px]">
+      {/* Visor de Mensajes y Registros de Inferencia */}
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 min-h-[380px]">
         {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role !== 'user' && (
-              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center shrink-0 mt-0.5">
-                <Bot className="w-4 h-4" />
+              <div className="w-6 h-6 rounded bg-[#161a26] border border-[#262f44] text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                <Cpu className="w-3 h-3" />
               </div>
             )}
 
             <div
-              className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+              className={`max-w-[90%] rounded-lg px-3.5 py-2.5 text-xs leading-relaxed border ${
                 msg.role === 'user'
-                  ? 'bg-cyan-600/25 border border-cyan-500/40 text-slate-100'
-                  : 'bg-slate-950/90 border border-slate-800 text-slate-200'
+                  ? 'bg-[#151c2c] border-[#293655] text-zinc-100'
+                  : 'bg-[#0e111a] border-[#1d2333] text-zinc-200'
               }`}
             >
               {msg.image && (
                 <img
                   src={msg.image}
                   alt="Problema enviado"
-                  className="max-h-40 rounded-lg border border-slate-700 mb-2 object-contain bg-slate-900"
+                  className="max-h-40 rounded border border-[#2b3348] mb-2 object-contain bg-black"
                 />
               )}
 
               {msg.provider && (
-                <div className="mb-1.5 flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-cyan-400 border border-slate-800">
-                    ⚡ {msg.provider}
+                <div className="mb-2 flex items-center gap-1.5 font-tech">
+                  <span className="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#161a25] text-amber-300 border border-[#2b344a]">
+                    // {msg.provider}
                   </span>
                 </div>
               )}
@@ -220,50 +225,55 @@ export default function BedrockPhysicsChat({
             </div>
 
             {msg.role === 'user' && (
-              <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center shrink-0 mt-0.5">
-                <User className="w-4 h-4" />
+              <div className="w-6 h-6 rounded bg-[#192236] border border-[#29395b] text-sky-300 flex items-center justify-center shrink-0 mt-0.5 font-tech text-[10px] font-bold">
+                <User className="w-3 h-3" />
               </div>
             )}
           </div>
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-xs text-cyan-300 bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5">
-            <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+          <div className="flex items-center gap-2.5 font-tech text-[11px] text-amber-300 bg-[#0e1119] border border-amber-400/30 rounded-lg px-3 py-2">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
             <span>
-              Analizando problema físico, calculando Diagramas de Cuerpo Libre y sincronizando simulador...
+              EXTRAYENDO TENSORES DINÁMICOS & CALIBRANDO ESCENA INTERACTIVA...
             </span>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Formulario de Entrada de Pregunta / Enunciado */}
+      {/* Terminal de Comando / Entrada de Enunciado */}
       <form
         onSubmit={handleSubmit}
-        className="p-3 bg-slate-950/90 border-t border-slate-800 space-y-2"
+        className="p-3 bg-[#0a0c12] border-t border-[#1c2232] space-y-2 font-tech"
       >
         <div className="flex gap-2">
-          <textarea
-            rows={2}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            placeholder="Escribe un problema (ej: 'Un bloque de 8 kg en rampa de 35° con fricción 0.18 unido por polea a 5 kg') o sube una imagen..."
-            className="flex-1 bg-slate-900 border border-slate-800 focus:border-cyan-500/60 focus:outline-none rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 resize-none"
-          />
+          <div className="relative flex-1">
+            <span className="absolute left-3 top-2.5 text-amber-400/80 font-bold text-xs select-none">
+              &gt;
+            </span>
+            <textarea
+              rows={2}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Ingresa parámetros o enunciado (ej: 'Masa de 9kg conectada por polea a rampa de 40° con fricción 0.15')..."
+              className="w-full bg-[#08090e] border border-[#20273a] focus:border-amber-400/70 focus:outline-none rounded-lg pl-7 pr-3 py-2 text-[11.5px] text-zinc-100 placeholder-zinc-600 resize-none font-tech transition"
+            />
+          </div>
           <button
             type="submit"
             disabled={isLoading || (!input.trim() && !imagePreview)}
-            className="px-4 rounded-xl font-semibold text-xs bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 text-white flex flex-col items-center justify-center gap-1 shadow-lg shadow-cyan-500/20 transition cursor-pointer shrink-0"
+            className="px-3.5 rounded-lg font-bold text-[11px] bg-[#1a1f2e] hover:bg-[#252c42] disabled:opacity-40 text-amber-300 border border-amber-400/40 flex flex-col items-center justify-center gap-1 transition cursor-pointer shrink-0 uppercase tracking-wider"
           >
-            {imagePreview ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />}
-            <span>{imagePreview ? 'Simular' : 'Enviar'}</span>
+            {imagePreview ? <Sparkles className="w-3.5 h-3.5 text-amber-400" /> : <Send className="w-3.5 h-3.5 text-amber-400" />}
+            <span>{imagePreview ? 'RESOLVER' : 'ENVIAR'}</span>
           </button>
         </div>
       </form>
@@ -271,9 +281,6 @@ export default function BedrockPhysicsChat({
   );
 }
 
-/**
- * Renderizador ligero y limpio de Markdown para ecuaciones, bloques de código, títulos y listas
- */
 function FormattedMarkdown({ text }) {
   if (!text) return null;
   const blocks = text.split(/(```[\s\S]*?```)/g);
@@ -286,7 +293,7 @@ function FormattedMarkdown({ text }) {
           return (
             <pre
               key={idx}
-              className="bg-slate-900/95 border border-slate-800 text-amber-300 font-mono text-[11px] p-2.5 rounded-lg overflow-x-auto"
+              className="bg-[#07090e] border border-[#202638] text-amber-300 font-tech text-[10.5px] p-2.5 rounded overflow-x-auto"
             >
               {inner}
             </pre>
@@ -300,18 +307,18 @@ function FormattedMarkdown({ text }) {
               const trimmed = line.trim();
               if (!trimmed) return <div key={lIdx} className="h-1" />;
               if (trimmed === '---') {
-                return <hr key={lIdx} className="border-slate-800 my-2" />;
+                return <hr key={lIdx} className="border-[#1e2434] my-2" />;
               }
               if (trimmed.startsWith('### ')) {
                 return (
-                  <h4 key={lIdx} className="text-xs font-bold text-cyan-300 pt-1">
+                  <h4 key={lIdx} className="font-tech text-xs font-bold text-amber-300 pt-1 tracking-wider uppercase">
                     {trimmed.replace('### ', '')}
                   </h4>
                 );
               }
               if (trimmed.startsWith('#### ')) {
                 return (
-                  <h5 key={lIdx} className="text-xs font-semibold text-indigo-300 pt-1">
+                  <h5 key={lIdx} className="font-tech text-xs font-semibold text-sky-300 pt-1">
                     {trimmed.replace('#### ', '')}
                   </h5>
                 );
@@ -319,7 +326,7 @@ function FormattedMarkdown({ text }) {
               if (trimmed.startsWith('- ')) {
                 return (
                   <div key={lIdx} className="flex items-start gap-1.5 pl-1">
-                    <span className="text-cyan-400 mt-0.5">•</span>
+                    <span className="text-amber-400 font-bold">•</span>
                     <span dangerouslySetInnerHTML={{ __html: formatInline(trimmed.slice(2)) }} />
                   </div>
                 );
@@ -343,11 +350,10 @@ function formatInline(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-zinc-100 font-bold">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em class="text-zinc-300">$1</em>')
     .replace(
       /`(.*?)`/g,
-      '<code class="font-mono text-[11px] bg-slate-900 text-emerald-300 px-1.5 py-0.5 rounded border border-slate-800">$1</code>'
+      '<code class="font-tech text-[11px] bg-[#141824] text-emerald-300 px-1.5 py-0.5 rounded border border-[#242b3e]">$1</code>'
     );
 }
-
