@@ -10,8 +10,12 @@ import {
   Sparkles,
   Sliders,
   Hand,
+  Box,
+  Layers,
+  Camera,
 } from 'lucide-react';
 import { solveMechanicsScene } from '../physics/physicsEngine';
+import Physics3DViewport from './Physics3DViewport';
 
 export default function PhysicsCanvasSimulator({
   sceneType,
@@ -25,6 +29,9 @@ export default function PhysicsCanvasSimulator({
   onLiveSolverUpdate,
 }) {
   const canvasRef = useRef(null);
+  const solverRef = useRef(null);
+  const [viewMode, setViewMode] = useState('3d');
+  const [resetCamTrigger, setResetCamTrigger] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [timeScale, setTimeScale] = useState(1.0);
   const [showVectors, setShowVectors] = useState(true);
@@ -120,6 +127,7 @@ export default function PhysicsCanvasSimulator({
         sandboxRopes,
       });
 
+      solverRef.current = solver;
       if (onLiveSolverUpdate) {
         onLiveSolverUpdate(solver);
       }
@@ -399,81 +407,73 @@ export default function PhysicsCanvasSimulator({
   };
 
   return (
-    <div className="flex flex-col bg-[#0b0d13] border border-[#212738] rounded-xl overflow-hidden shadow-2xl">
-      {/* Barra superior de Control de Instrumentación */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2 bg-[#0e111a] border-b border-[#1f2537]">
+    <div className="flex flex-col bg-[#050507] border border-white/15 rounded-2xl overflow-hidden">
+      {/* Barra superior minimalista (una sola fila limpia) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-black border-b border-white/10">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded font-tech text-[11px] font-bold uppercase tracking-wider transition cursor-pointer border ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition cursor-pointer ${
               isPlaying
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/50 hover:bg-amber-500/25'
-                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/25'
+                ? 'bg-white text-black hover:bg-white/90'
+                : 'bg-white/10 text-white border border-white/25 hover:bg-white/20'
             }`}
           >
-            {isPlaying ? <Pause className="w-3 h-3 text-amber-400" /> : <Play className="w-3 h-3 text-emerald-400" />}
-            {isPlaying ? 'PAUSAR MOTOR' : 'INICIAR SIM'}
+            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            {isPlaying ? 'Pausar' : 'Iniciar'}
           </button>
 
           <button
             onClick={resetSimulation}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded font-tech text-[11px] font-semibold text-zinc-300 bg-[#161a26] hover:bg-[#1f2537] border border-[#2a3247] transition cursor-pointer"
-            title="Reiniciar posiciones iniciales"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            title="Reiniciar simulación"
           >
-            <RotateCcw className="w-3 h-3 text-zinc-400" />
-            REINICIAR [T₀]
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reiniciar
           </button>
 
-          {/* Selector de escala temporal conmutada */}
-          <div className="flex items-center bg-[#07090e] border border-[#1d2232] rounded p-0.5 font-tech text-[10px]">
-            {[0.25, 0.5, 1].map((spd) => (
-              <button
-                key={spd}
-                onClick={() => setTimeScale(spd)}
-                className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                  timeScale === spd
-                    ? 'bg-amber-400/20 text-amber-300 font-bold border border-amber-400/40'
-                    : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {spd}X
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setTimeScale(timeScale === 1 ? 0.5 : timeScale === 0.5 ? 0.25 : 1)}
+            className="px-2.5 py-1 rounded-full text-xs text-white/70 hover:text-white border border-white/15 hover:border-white/35 transition cursor-pointer font-tech"
+            title="Cambiar velocidad de simulación"
+          >
+            {timeScale}x
+          </button>
         </div>
 
-        {/* Interruptores de Telemetría DCL */}
-        <div className="flex flex-wrap items-center gap-1.5 font-tech text-[10.5px]">
+        {/* Vista 3D/2D y Vectores */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-[#0a0a0d] border border-white/15 rounded-full p-0.5 text-xs">
+            <button
+              onClick={() => setViewMode('3d')}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full transition cursor-pointer ${
+                viewMode === '3d' ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Box className="w-3 h-3" />
+              3D
+            </button>
+            <button
+              onClick={() => setViewMode('2d')}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full transition cursor-pointer ${
+                viewMode === '2d' ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Layers className="w-3 h-3" />
+              2D
+            </button>
+          </div>
+
           <button
             onClick={() => setShowVectors(!showVectors)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded border transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition cursor-pointer ${
               showVectors
-                ? 'bg-[#182033] text-sky-300 border-sky-500/60 font-semibold'
-                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
+                ? 'bg-white/15 text-white border-white/35'
+                : 'text-white/50 border-white/15 hover:text-white'
             }`}
           >
-            <Eye className="w-3 h-3" />
-            TENSORES DCL
-          </button>
-          <button
-            onClick={() => setShowComponents(!showComponents)}
-            className={`px-2.5 py-1 rounded border transition cursor-pointer ${
-              showComponents
-                ? 'bg-[#29171f] text-rose-300 border-rose-500/60 font-semibold'
-                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
-            }`}
-          >
-            PROY. TRIGON. (mg·senθ)
-          </button>
-          <button
-            onClick={() => setShowValues(!showValues)}
-            className={`px-2.5 py-1 rounded border transition cursor-pointer ${
-              showValues
-                ? 'bg-[#282115] text-amber-300 border-amber-500/60 font-semibold'
-                : 'bg-[#0f121b] text-zinc-500 border-[#222737]'
-            }`}
-          >
-            CALIB. (N)
+            <Eye className="w-3.5 h-3.5" />
+            Vectores
           </button>
         </div>
       </div>
@@ -536,42 +536,64 @@ export default function PhysicsCanvasSimulator({
         </div>
       )}
 
-      {/* Lienzo Principal HTML5 Canvas Alta Definición */}
-      <div className="relative w-full aspect-[16/9] max-h-[480px] bg-slate-950 select-none">
-        <canvas
-          ref={canvasRef}
-          width={920}
-          height={500}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          className={`w-full h-full object-contain ${
-            sceneType === 'sandbox_game' ? 'cursor-grab active:cursor-grabbing' : ''
-          }`}
-        />
+      {/* Lienzo Principal 3D (Three.js) o HTML5 Canvas 2D */}
+      <div className="relative w-full aspect-[16/9] max-h-[480px] bg-slate-950 select-none overflow-hidden">
+        {viewMode === '3d' ? (
+          <>
+            <Physics3DViewport
+              sceneType={sceneType}
+              params={params}
+              simRef={simRef}
+              solverRef={solverRef}
+              showVectors={showVectors}
+              sandboxObjects={sandboxObjects}
+              sandboxRopes={sandboxRopes}
+              resetCameraTrigger={resetCamTrigger}
+            />
+            <div className="absolute top-3 right-3">
+              <button
+                onClick={() => setResetCamTrigger((n) => n + 1)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 hover:bg-white hover:text-black backdrop-blur-md border border-white/20 text-[11px] text-white/85 cursor-pointer transition"
+                title="Restablecer ángulo de cámara 3D"
+              >
+                <Camera className="w-3 h-3" />
+                Centrar
+              </button>
+            </div>
+          </>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            width={920}
+            height={500}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            className={`w-full h-full object-contain ${
+              sceneType === 'sandbox_game' ? 'cursor-grab active:cursor-grabbing' : ''
+            }`}
+          />
+        )}
 
-        {/* Leyenda de Colores de Vectores DCL flotante */}
-        <div className="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 px-3.5 py-1.5 rounded-xl bg-slate-950/88 backdrop-blur-md border border-slate-800/90 text-[11px] shadow-lg">
-          <div className="flex flex-wrap items-center gap-3.5">
-            <span className="flex items-center gap-1.5 text-rose-400 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500" /> Peso (W = mg)
+        {/* Leyenda discreta y acceso rápido al chat */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 px-4 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-[11px]">
+          <div className="flex items-center gap-3.5 text-white/70">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" /> Peso
             </span>
-            <span className="flex items-center gap-1.5 text-sky-400 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block shadow-sm shadow-sky-400" /> Normal (N)
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" /> Normal
             </span>
-            <span className="flex items-center gap-1.5 text-amber-400 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm shadow-amber-400" /> Tensión (T)
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-300 inline-block" /> Tensión
             </span>
-            <span className="flex items-center gap-1.5 text-orange-400 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block shadow-sm shadow-orange-400" /> Fricción (f_r)
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-400" /> F_ext / Elástica / v⃗
+            <span className="flex items-center gap-1.5 hidden sm:flex">
+              <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" /> Fricción
             </span>
           </div>
           <button
             onClick={onSolveCurrentSceneWithAI}
-            className="text-cyan-300 hover:text-cyan-200 font-semibold flex items-center gap-1 cursor-pointer"
+            className="text-white/90 hover:text-white font-medium flex items-center gap-1.5 cursor-pointer text-[11px]"
           >
             <Sparkles className="w-3.5 h-3.5" /> Explicar en el Chat
           </button>
@@ -579,7 +601,7 @@ export default function PhysicsCanvasSimulator({
       </div>
 
       {/* Panel de Controles Deslizantes en Vivo */}
-      <div className="p-4 bg-slate-900/95 border-t border-slate-800">
+      <div className="p-4 bg-black border-t border-white/15">
         {sceneType === 'sandbox_game' ? (
           selectedSandboxObj ? (
             <div className="space-y-3">
@@ -788,14 +810,14 @@ export default function PhysicsCanvasSimulator({
 
 function SliderControl({ label, value, min, max, step, unit, onChange }) {
   return (
-    <div className="bg-[#0b0e14] border border-[#1e2434] hover:border-[#2f3850] rounded-lg px-2.5 py-2 transition group">
+    <div className="bg-[#050507] border border-white/15 hover:border-white/35 rounded-xl px-3 py-2.5 transition group">
       <div className="flex items-center justify-between text-[11px] mb-1 font-tech">
-        <span className="text-zinc-400 group-hover:text-zinc-200 transition font-medium truncate uppercase tracking-wider text-[10px]">
+        <span className="text-white/55 group-hover:text-white/85 transition font-medium truncate uppercase tracking-[0.12em] text-[9.5px]">
           {label}
         </span>
-        <span className="font-bold text-amber-300">
+        <span className="font-semibold text-white">
           {Number(value).toFixed(step < 0.1 ? 2 : step < 1 ? 1 : 0)}
-          <span className="text-zinc-500 font-normal ml-0.5 text-[9.5px]">{unit}</span>
+          <span className="text-white/45 font-normal ml-0.5 text-[9.5px]">{unit}</span>
         </span>
       </div>
       <input

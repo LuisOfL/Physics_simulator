@@ -9,22 +9,22 @@ export default function FreeBodyDiagramInspector({ solver }) {
   return (
     <div className="space-y-3.5">
       {/* Rack de Diagramas de Cuerpo Libre Aislados */}
-      <div className="bg-[#0b0d13] border border-[#212738] rounded-xl p-3.5 sm:p-4 shadow-xl">
-        <div className="flex items-center justify-between mb-3 border-b border-[#1c2230] pb-2.5">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+      <div className="bg-[#050507] border border-white/15 rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-3.5 border-b border-white/15 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-white/10 border border-white/25 flex items-center justify-center text-white">
               <Compass className="w-3.5 h-3.5" />
             </div>
             <div>
-              <h3 className="font-heading text-xs sm:text-sm font-bold text-zinc-100 tracking-wide uppercase">
-                VECTORES DE CUERPO LIBRE // PARTICULA PUNTUAL (DCL)
+              <h3 className="font-heading text-xs sm:text-sm font-medium text-white tracking-[0.16em] uppercase">
+                VECTORES DE CUERPO LIBRE // PARTÍCULA PUNTUAL (DCL)
               </h3>
-              <p className="font-tech text-[10.5px] text-zinc-500">
+              <p className="font-tech text-[10px] tracking-[0.12em] text-white/45">
                 PROYECCIÓN CARTESIANA ROTADA EN EL CENTRO DE MASA (CM)
               </p>
             </div>
           </div>
-          <span className="font-tech text-[10px] px-2 py-0.5 rounded bg-[#151924] text-amber-300 border border-[#283248]">
+          <span className="font-tech text-[10px] tracking-[0.15em] px-3 py-0.5 rounded-full bg-black text-white border border-white/25">
             NODOS ACTIVOS: 0{bodies.length}
           </span>
         </div>

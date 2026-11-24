@@ -2,37 +2,56 @@
 
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #08090d;
-    background-image: 
-      radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.035), transparent 45%),
-      linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-    background-size: 100% 100%, 32px 32px, 32px 32px;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    letter-spacing: 0.01em;
   }
-  
+
   h1, h2, h3, .font-heading {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Montserrat', system-ui, sans-serif;
+    letter-spacing: 0.14em;
   }
-  
+
+  .font-editorial {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  .font-script {
+    font-family: 'Kaushan Script', cursive;
+  }
+
   code, pre, .font-mono, .font-tech {
     font-family: 'Chivo Mono', 'JetBrains Mono', monospace;
   }
 }
 
-/* Scrollbar técnica minimalista */
+/* Scrollbar minimalista obsidiana */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #08090d;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #272a34;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f4454;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUpIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

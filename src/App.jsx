@@ -2,17 +2,20 @@ import React, { useState, useCallback } from 'react';
 import {
   Gamepad2,
   Globe2,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   SCENE_TEMPLATES,
   GRAVITY_PRESETS,
   solveMechanicsScene,
 } from './physics/physicsEngine';
+import LandingPage from './components/LandingPage';
 import PhysicsCanvasSimulator from './components/PhysicsCanvasSimulator';
 import FreeBodyDiagramInspector from './components/FreeBodyDiagramInspector';
 import BedrockPhysicsChat from './components/BedrockPhysicsChat';
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [sceneType, setSceneType] = useState('incline_pulley');
   const [paramsByScene, setParamsByScene] = useState(() => {
     const initial = {};
@@ -76,15 +79,11 @@ export default function App() {
     {
       id: 'welcome',
       role: 'assistant',
-      provider: 'PhysiLab Neural Engine // AWS Bedrock',
-      content: `### 🛰️ CONSOLA DE CONTROL Y ANÁLISIS DE MECÁNICA CLÁSICA
+      content: `### Asistente de Mecánica Clásica
 
-El sistema se encuentra en línea y calibrado en **${(currentParams.g || 9.81).toFixed(2)} m/s²**.
+Sistema calibrado en **${(currentParams.g || 9.81).toFixed(2)} m/s²**.
 
-**MODOS OPERATIVOS DISPONIBLES:**
-- **[01] INFERENCIA POR IMAGEN:** Arrastra o pega (\`Ctrl+V\`) una captura de un examen o diagrama físico. El LLM decodifica variables cinemáticas y dinámicas para sintetizar la escena en vivo.
-- **[02] VECTORIZACIÓN DCL:** Los Diagramas de Cuerpo Libre proyectan en tiempo real los tensores de fuerza ($\vec{W}, \vec{N}, \vec{T}, \vec{f}_r, \vec{F}_{ext}$).
-- **[03] EXPERIMENTACIÓN MODULAR (🎮):** Ensambla masas y poleas personalizadas en el simulador.`,
+Puedes escribir un enunciado físico, pegar una imagen con \`Ctrl+V\` o cargar un ejemplo para generar la simulación 3D y su solución paso a paso.`,
     },
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -146,6 +145,8 @@ El sistema se encuentra en línea y calibrado en **${(currentParams.g || 9.81).t
           role: 'assistant',
           content: data.reply || 'Problema procesado e inyectado al simulador.',
           provider: data.provider || 'AWS Bedrock Runtime',
+          graphData: data.graphData || null,
+          graphRag: data.graphRag || null,
         },
       ]);
     } catch {
@@ -200,90 +201,93 @@ El sistema se encuentra en línea y calibrado en **${(currentParams.g || 9.81).t
 
   const sceneKeys = Object.keys(SCENE_TEMPLATES);
 
-  return (
-    <div className="min-h-screen bg-[#08090d] text-zinc-100 flex flex-col font-sans selection:bg-amber-400/20 selection:text-amber-200">
-      {/* Barra de Navegación de Escenarios Limpia */}
-      <nav className="sticky top-0 z-40 bg-[#0d0f14]/95 backdrop-blur-md border-b border-[#202430] px-3 sm:px-5 py-2">
-        <div className="max-w-[1680px] mx-auto flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-          {sceneKeys.map((key, idx) => {
-            const tpl = SCENE_TEMPLATES[key];
-            const active = sceneType === tpl.id;
-            const isGame = tpl.id === 'sandbox_game';
-            const codeNum = `0${idx + 1}`.slice(-2);
+  if (showLanding) {
+    return (
+      <LandingPage
+        onEnterSimulator={(targetScene) => {
+          if (targetScene && SCENE_TEMPLATES[targetScene]) {
+            setSceneType(targetScene);
+          }
+          setShowLanding(false);
+        }}
+      />
+    );
+  }
 
-            return (
-              <button
-                key={tpl.id}
-                onClick={() => setSceneType(tpl.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded text-[11.5px] font-tech font-semibold whitespace-nowrap transition cursor-pointer border ${
-                  active
-                    ? isGame
-                      ? 'bg-[#1b172a] text-purple-300 border-purple-500/70 shadow-sm shadow-purple-500/20'
-                      : 'bg-[#171b26] text-amber-300 border-amber-400/60 shadow-xs'
-                    : isGame
-                    ? 'bg-[#12111d] text-purple-400/70 border-[#28213a] hover:text-purple-300 hover:border-purple-500/40'
-                    : 'bg-[#0f1118] text-zinc-400 border-[#1f2330] hover:text-zinc-200 hover:border-[#2e3447]'
-                }`}
-              >
-                <span className={`text-[10px] font-mono opacity-60 ${active ? 'text-amber-400' : ''}`}>
-                  [{codeNum}]
-                </span>
-                {isGame && <Gamepad2 className="w-3.5 h-3.5 text-purple-400" />}
-                <span>{tpl.shortName.toUpperCase()}</span>
-              </button>
-            );
-          })}
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-white/20 selection:text-white">
+      {/* Barra de Navegación Superior Limpia */}
+      <nav className="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3">
+        <div className="max-w-[1680px] mx-auto flex items-center justify-between gap-4 overflow-x-auto scrollbar-none">
+          <button
+            onClick={() => setShowLanding(true)}
+            className="flex items-center gap-2 pr-4 border-r border-white/15 text-white/75 hover:text-white transition cursor-pointer shrink-0"
+            title="Volver al inicio"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold tracking-[0.28em] uppercase">PHYSILAB</span>
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            {sceneKeys.map((key) => {
+              const tpl = SCENE_TEMPLATES[key];
+              const active = sceneType === tpl.id;
+              const isGame = tpl.id === 'sandbox_game';
+              const cleanNames = {
+                incline_pulley: 'Plano Inclinado',
+                horizontal_table: 'Mesa + Polea',
+                atwood: 'Atwood',
+                spring_block: 'Resorte',
+                projectile: 'Proyectil',
+                pendulum: 'Péndulo',
+                sandbox_game: 'Constructor',
+              };
+
+              return (
+                <button
+                  key={tpl.id}
+                  onClick={() => setSceneType(tpl.id)}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition cursor-pointer ${
+                    active
+                      ? 'bg-white text-black font-semibold'
+                      : 'text-white/55 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {isGame && <Gamepad2 className={`w-3.5 h-3.5 ${active ? 'text-black' : 'text-white/60'}`} />}
+                  <span>{cleanNames[tpl.id] || tpl.shortName}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </nav>
 
       {/* Área de Trabajo Principal */}
-      <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <main className="flex-1 max-w-[1680px] w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Lado Izquierdo (7 Columnas): Panel del Simulador + Inspector de Fuerzas DCL */}
-        <div className="lg:col-span-7 space-y-4">
-          {/* Cabecera Técnica del Módulo Activo + Selector de Gravedad Separado */}
-          <div className="relative bg-[#0d0f15] border border-[#202534] rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 overflow-hidden">
-            <div className="absolute top-1.5 left-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
-            <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
-            <div className="absolute bottom-1.5 left-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
-            <div className="absolute bottom-1.5 right-1.5 w-1 h-1 rounded-full bg-[#353c52]" />
-
-            <div className="flex-1 min-w-[280px]">
-              <div className="flex items-center gap-2">
-                <span className="font-tech text-[10px] uppercase px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
-                  {SCENE_TEMPLATES[sceneType]?.category}
-                </span>
-                <h2 className="font-heading text-sm font-bold text-zinc-100 uppercase tracking-wide">
-                  {SCENE_TEMPLATES[sceneType]?.name}
-                </h2>
-              </div>
-              <p className="text-[11.5px] text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-                {SCENE_TEMPLATES[sceneType]?.description}
-              </p>
+        <div className="lg:col-span-7 space-y-5">
+          {/* Cabecera Simple: Título + Selector compacto de Gravedad */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+            <div>
+              <h2 className="font-heading text-base font-medium text-white tracking-[0.08em]">
+                {SCENE_TEMPLATES[sceneType]?.name}
+              </h2>
             </div>
 
-            {/* Selector de Campo Gravitatorio Ubicado Abajo y Separado */}
-            <div className="flex items-center gap-1 bg-[#12151e] border border-[#232838] p-1 rounded-lg shrink-0">
-              <div className="flex items-center gap-1.5 px-2 text-[10px] font-tech text-zinc-400 uppercase tracking-wider">
-                <Globe2 className="w-3.5 h-3.5 text-amber-400/90" />
-                <span>CAMPO g:</span>
-              </div>
-              {GRAVITY_PRESETS.map((gp) => {
-                const isSelected = Math.abs((currentParams.g ?? 9.81) - gp.g) < 0.05;
-                return (
-                  <button
-                    key={gp.id}
-                    onClick={() => handleParamsChange({ g: gp.g })}
-                    className={`font-tech text-[10.5px] px-2 py-1 rounded transition cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-400/20 text-amber-300 font-bold border border-amber-400/50 shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#181d2a]'
-                    }`}
-                    title={`${gp.name}: ${gp.g} m/s²`}
-                  >
-                    {gp.name.toUpperCase()} <span className="opacity-70 text-[9px]">[{gp.g}]</span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-1.5 bg-[#0a0a0d] border border-white/15 rounded-full px-3 py-1">
+              <Globe2 className="w-3.5 h-3.5 text-white/60" />
+              <select
+                value={currentParams.g ?? 9.81}
+                onChange={(e) => handleParamsChange({ g: Number(e.target.value) })}
+                className="bg-transparent text-xs text-white focus:outline-none cursor-pointer pr-1"
+                aria-label="Campo gravitatorio"
+              >
+                {GRAVITY_PRESETS.map((gp) => (
+                  <option key={gp.id} value={gp.g} className="bg-black text-white">
+                    {gp.name} ({gp.g} m/s²)
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -305,8 +309,8 @@ El sistema se encuentra en línea y calibrado en **${(currentParams.g || 9.81).t
         </div>
 
         {/* Lado Derecho (5 Columnas): Consola de Inferencia IA & Visión */}
-        <div className="lg:col-span-5 flex flex-col min-h-[640px]">
-          <div className="flex-1 flex flex-col h-full">
+        <div className="lg:col-span-5 lg:sticky lg:top-16 lg:h-[calc(100vh-5.5rem)] flex flex-col">
+          <div className="flex-1 min-h-0 flex flex-col h-full">
             <BedrockPhysicsChat
               messages={messages}
               isLoading={isChatLoading}
